@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>update</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+</head>
+<body>
+    <h1>update project</h1>
+    <b> <p id="null_field"></p> </b>
+    <label for="project_name">Project Name : </label>
+    <input type="text" id='project_name' name='project_name' required> <br><br>
+    <label for="project_start_date">Project Start Date : </label>
+    <input type="date" id='project_start_date' name='project_start_date' required> <br><br>
+    <label for="project_end_date">Project End Date : </label>
+    <input type="date" id='project_end_date' name='project_end_date' required> <br><br>
+    <button id="submitButton" type="submit">Update</button><br><br>
+
+
+
+
+
+
+    
+
+</body>
+</html>
+
+
+<script>
+    // Example using jQuery AJAX for update
+    $("#submitButton").click(function(event) {
+    // function submitUpdatedRecord(recordId, updatedData) {
+        var username = $("#username").val();
+        var password = $("#password").val();
+
+        console.log( username, password);
+        if(username != '' &&  password != ''  ){
+
+            var payload = {
+                "username" : username,
+                "password" : password
+            }
+        $.ajax({
+            url: '/task/project/' + project_id +'/', // Your server-side endpoint
+            type: 'PUT', // Or POST if your API uses it for updates
+            contentType: 'application/json', // Specify content type for JSON data
+            data: JSON.stringify(updatedData), // Send updated data as JSON
+            success: function(response) {
+                // Handle successful update (e.g., update the displayed record, close modal)
+                console.log("Record updated successfully:", response);
+                refreshDisplay(); // Or update specific elements
+            },
+            error: function(xhr, status, error) {
+                console.error("Error updating record:", error);
+            }
+        });
+    })
+
+
+    // Example using jQuery AJAX
+    $(document).ready(function() {
+    // function fetchRecordForEdit(recordId) {
+        $.ajax({
+            url: '/task/managertask/' + project_id +'/', // Your server-side endpoint
+            type: 'GET',
+            dataType: 'json', // Expecting JSON response
+            success: function(data) {
+                // Populate the edit form or in-place editor with 'data'
+                console.log("project data : ", data);
+                populateEditForm(data);
+
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching record:", error);
+            }
+        });
+    //}
+
+    })
+
+
+
+
+
+
+
+</script>
