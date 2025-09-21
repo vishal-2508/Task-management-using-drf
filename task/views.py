@@ -36,23 +36,21 @@ class ProjectView(APIView):
     def post(self, request, pk=None):
         if pk is not None:
             return Response({'massage':'project id is not requied for new project create.'})
-        # print('request.data ,........', request.data)
-        serialize = ProjectSerializer(data=request.data)
+        serialize = ProjectSerializer(data=request.data, context={'request': request})
         if serialize.is_valid():
-            serialize.save()
+            serialize.save(user=request.user)
             # print(serialize.data)
             return Response(serialize.data, status=status.HTTP_201_CREATED)
         return Response(serialize.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk=None):
-        # print('request.data ,........', request.data)
         if pk is None:
             return Response({'massage':'project id is compulsory requied.'})
         try:
             object = Project.objects.get(id = pk)
         except Exception as e:
             return Response({"massage" : str(e)})
-        serialize = ProjectSerializer(object, data=request.data)
+        serialize = ProjectSerializer(object, data=request.data, partial=True, context={'request': request})
         if serialize.is_valid():
             serialize.save()
             # print(serialize.data)

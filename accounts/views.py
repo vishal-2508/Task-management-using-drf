@@ -2,6 +2,8 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializers
 # Create your views here.
 
@@ -12,6 +14,18 @@ def login_page(request):
 def registration_page(request):
     print("this is registration page...")
     return render(request, 'accounts/registration.html')
+
+class LogoutView(APIView):
+        permission_classes = (IsAuthenticated,)
+
+        def post(self, request):
+            try:
+                refresh_token = request.data["refresh_token"]
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+                return Response({"message": "User logout successfully"}, status=205)  # Reset Content
+            except Exception as e:
+                return Response({"message": "User logout failed"},status=status.HTTP_400_BAD_REQUEST)
 
 class RegistrationView(APIView):
     print('in register : ')

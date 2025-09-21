@@ -36,6 +36,7 @@ class ManagerTaskSerializer(serializers.ModelSerializer):
         # fields = ['task_name', 'start_date', 'end_date', 'assign', 'managertask_employeetask']
 
 class ProjectSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     project_managertask = ManagerTaskSerializer(many=True, read_only=True)
 
     class Meta:
