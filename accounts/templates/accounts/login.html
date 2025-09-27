@@ -16,14 +16,11 @@
     <b> <p id="null_field"></p> </b>
 
 
-    {% comment %} <form> {% endcomment %}
-
-        <label for="username">User Name : </label>
-        <input type="text" id='username' name='username' required> <br><br>
-        <label for="password">Password : </label>
-        <input type="password" id='password' name='password' required> <br><br>
-        <button id="submitbtn" type="submit">Login</button><br><br>
-    {% comment %} </form> {% endcomment %}
+    <label for="username">User Name : </label>
+    <input type="text" id='username' name='username' required> <br><br>
+    <label for="password">Password : </label>
+    <input type="password" id='password' name='password' required> <br><br>
+    <button id="submitbtn" type="submit">Login</button><br><br>
 </body>
 </html>
 
@@ -35,68 +32,41 @@
 
     $(document).ready(function() {
         
-    $("#submitbtn").click(function(event) {
-        
-        var username = $("#username").val();
-        var password = $("#password").val();
-
-        console.log( username, password);
-        if(username != '' &&  password != ''  ){
-
-            var payload = {
-                "username" : username,
-                "password" : password
-            }
-
-            $.ajax({
-            url: 'http://127.0.0.1:8000/login/', // Replace with your API endpoint
-            method: 'POST', // HTTP method (GET, POST, PUT, DELETE, etc.)
-            dataType: 'json', // Expected data type of the response (e.g., 'json', 'xml', 'html')
-            data : payload, // Data to be sent in the request body
-            /*
-            success: function(response) {
-                if (response && response.token) { // Assuming the token is in 'response.token'
-                    // const jwtToken = response.token;
-                    // Proceed to store the token
-                    console.log('API call jwtToken successful :', response.token);
-                    // localStorage.setItem('accessToken', jwtToken);
-                } else {
-                    console.error('Login successful, but no token received.');
+        $("#submitbtn").click(function(event) {
+            var username = $("#username").val();
+            var password = $("#password").val();
+            if(username != '' &&  password != ''  ){
+                var payload = {
+                    "username" : username,
+                    "password" : password
                 }
-            },
-            */
-            success: function(response) {
-                // This function is executed if the request is successful
-                //const accessToken = response.access;
-                //console.log('Access Token:', accessToken);
-                //console.log("values .. ", response)
-
-                console.log('API call successful:', response);
-                console.log('API call access tocken value :', response.access);
-                localStorage.setItem('accessToken', response.access);
-                localStorage.setItem('refreshToken', response.refresh);
-                window.location.replace('/task/dashboard_page/');
-                // Process the received data here
-            },
-            error: function(xhr, status, error) {
-                // This function is executed if the request fails
-                console.error('API call failed:', status, error);
-                // Handle the error appropriately
-            },
-            complete: function() {
-                // This function is executed regardless of success or failure
-                console.log('API call completed.');
+                $.ajax({
+                url: 'http://127.0.0.1:8000/login/', // Replace with your API endpoint
+                method: 'POST', // HTTP method (GET, POST, PUT, DELETE, etc.)
+                dataType: 'json', // Expected data type of the response (e.g., 'json', 'xml', 'html')
+                data : payload, // Data to be sent in the request body
+                success: function(response) {
+                    // This function is executed if the request is successful
+                    console.log('API call successful:', response);
+                    localStorage.setItem('accessToken', response.access);
+                    localStorage.setItem('refreshToken', response.refresh);
+                    window.location.replace('/task/dashboard_page/');
+                    // Process the received data here
+                },
+                error: function(xhr, status, error) {
+                    // This function is executed if the request fails
+                    console.error('API call failed:', status, error);
+                    // Handle the error appropriately
+                },
+                complete: function() {
+                    // This function is executed regardless of success or failure
+                    console.log('API call completed.');
+                }
+                });
+            }else{
+                    $("#null_field").text("Please fill all requied field");
             }
-            });
-
-
-
-        }else{
-            document.getElementById("null_field").innerHTML = "Please fill all requied field";
-            // alert("Enter all Field which is required ")
-        }
-
-    });
+        });
     });
 
 

@@ -6,95 +6,117 @@
     <title>Dashboard</title>
     <script>
         // Check authentication status
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
+        var accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
             // Redirect to login page if not authenticated
             window.location.replace('/login_page/');
         }
         // If authenticated, the rest of the page content will load
     </script>
     <style>
-        .highlighted-row {
-                background-color: yellow; /* Or any desired highlight color */
-                transition: background-color 0.3s ease; /* Smooth transition */
-            }
+        {% comment %} body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        #main-content {
+            padding: 20px;
+        } {% endcomment %}
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+            backdrop-filter: blur(5px); /* Blur effect */
+            -webkit-backdrop-filter: blur(5px); /* For Safari */
+            z-index: 99; /* Ensure it's above main content */
+        }
+        .project-form-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 100; /* Ensure it's above the overlay */
+        }
+        .hidden {
+            display: none;
+    }
+
     </style>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
-  
-<script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
+    
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
 
 
 </head>
 <body>
     <h2>Dashboard page</h2>
+    <div style="text-align: right;">
+            <b><button id="logout_button" type="submit">Logout</button></b>
+    </div> <br>
 
-<div>
-    <b> <p id="null_field"></p> </b>
-    <label for="project_name">Project Name:</label>
-    <input type="text" id="project_name" name="project_name" ><br><br>
-    <label for="project_start_date">Project Start Date:</label>
-    <input type="date" id="project_start_date" name="project_start_date" ><br><br>
-    <label for="project_end_date">Project End Date:</label>
-    <input type="date" id="project_end_date" name="project_end_date" ><br><br>
-    <button id="submit_button" type="submit">Save</button><br><br>
+    <div id="overlay" class="overlay hidden"></div>
 
-</div>
+    <button onclick="showCreateProjectForm()">Create New Project</button> <br> <br>
 
-
-<table id="table_id" class="display">
-    <thead>
-        <tr>
-            <th>sr no</th>
-            <th>Project Name</th>
-            <th>Project Start date</th>
-            <th>Project End date</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-</table>
-
-<div id="editForm" style="display: none;">
-    <b> <p id="null_field"></p> </b>
-    <form>
+    <div id="create_project"  class="project-form-container hidden">
+        <h2>Create Project</h2>
+        <b> <p id="null_create_project"></p> </b>
         <label for="project_name">Project Name:</label>
         <input type="text" id="project_name" name="project_name" ><br><br>
         <label for="project_start_date">Project Start Date:</label>
         <input type="date" id="project_start_date" name="project_start_date" ><br><br>
         <label for="project_end_date">Project End Date:</label>
         <input type="date" id="project_end_date" name="project_end_date" ><br><br>
-        <input type="hidden" id="projectDetails" name="projectDetails" value="no set data">
+        <button id="project_submit_button" type="submit">Save</button><br><br>
+        <button type="button" onclick="hideCreateProjectForm()">Cancel</button>
+    </div>
+
+    <div id="edit_project" class="project-form-container hidden">
+        <h2>Edit Project</h2>
+        <b> <p id="null_edit_project"></p> </b>
+        <label for="editProject_name">Project Name:</label>
+        <input type="text" id="editProject_name" name="editProject_name" ><br><br>
+        <label for="editProject_start_date">Project Start Date:</label>
+        <input type="date" id="editProject_start_date" name="editProject_start_date" ><br><br>
+        <label for="editProject_end_date">Project End Date:</label>
+        <input type="date" id="editProject_end_date" name="editProject_end_date" ><br><br>
+        <input type="hidden" id="editProjectDetails" name="editProjectDetails" value="no set data">
         <button type="button" onclick="saveChanges()">Save</button>
         <button type="button" onclick="cancelEdit()">Cancel</button>
-    </form>
-</div>
+    </div>
 
-
+    <table id="table_id" class="display">
+        <thead>
+            <tr>
+                <th>sr no</th>
+                <th>Project Name</th>
+                <th>Project Start date</th>
+                <th>Project End date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+    </table>
 
 </body>
 </html>
 
     <script>
-        {% comment %} document.addEventListener('DOMContentLoaded', function() {
-            const accessToken = localStorage.getItem('accessToken');
-            if (!accessToken) {
-                //alert('Access token not found. Redirecting to login page.');
-                window.location.href = '/login_page/'; // Adjust to your login page
-            } else {
-                console.log('Access token found:', accessToken);
-                // Proceed with loading protected content or making authenticated API calls
-            }
-        }); {% endcomment %}
-
-        var accessToken = localStorage.getItem('accessToken');
 
         function saveChanges() {
-            var project_name = $("#project_name").val();
-            var project_start_date = $("#project_start_date").val();
-            var project_end_date = $("#project_end_date").val();
-            var projectDetailObjects = JSON.parse($("#projectDetails").val());
+            var project_name = $("#editProject_name").val();
+            var project_start_date = $("#editProject_start_date").val();
+            var project_end_date = $("#editProject_end_date").val();
+            var projectDetailObjects = JSON.parse($("#editProjectDetails").val());
             if(project_name != '' &&  project_start_date != '' && project_end_date != '' ){
                 var payload = {
                     "project_name" : project_name,
@@ -125,53 +147,75 @@
                     }
                 });
             } else{
-                $("#null_field").text("Please fill all requied field");
+                $("#null_edit_project").text("Please fill all requied field");
             } }
 
         function cancelEdit() {
-            $("#editForm").hide();
+            $('#overlay').addClass('hidden');
+            $('#edit_project').addClass('hidden');
+            $('body').css('overflow', 'auto');
             }
 
         function editProject(projectDetails) {
+            $('#overlay').removeClass('hidden');
+            $('#edit_project').removeClass('hidden');
+            $('body').css('overflow', 'hidden');
             let projectDetailString = JSON.stringify(projectDetails);
-            $("#editForm").show();
-            $("#project_name").val(projectDetails.project_name);
-            $("#project_start_date").val(projectDetails.project_start_date);
-            $("#project_end_date").val(projectDetails.project_end_date);
-            $("#projectDetails").val(projectDetailString);
+            console.log("console projectDetails : ", projectDetails)
+            // document.getElementById('table_id').classList.add('blurred');
+            $("#editProject_name").val(projectDetails.project_name);
+            $("#editProject_start_date").val(projectDetails.project_start_date);
+            $("#editProject_end_date").val(projectDetails.project_end_date);
+            $("#editProjectDetails").val(projectDetailString);
             }
         
         function deletePoject(projectId) {
-                console.log("the project ... ",projectId)
-                $.ajax({
-                    url: '/task/project/' + projectId + '/', // Replace with your API endpoint
-                    method: 'DELETE', // Or 'POST', 'PUT', 'DELETE'
-                    dataType: 'json', // Expected data type from the server (e.g., 'json', 'xml', 'html')
-                    headers: {
-                                "Authorization": "Bearer " + accessToken
-                            },
-                    success: function(response) {
-                        // Handle successful response
-                        console.log('Delete successfully ..:', response);
-                        window.location.reload();
-                        // window.location.replace('/task/dashboard_page/');
+            console.log("the project ... ",projectId)
+            $.ajax({
+                url: '/task/project/' + projectId + '/', // Replace with your API endpoint
+                method: 'DELETE', // Or 'POST', 'PUT', 'DELETE'
+                dataType: 'json', // Expected data type from the server (e.g., 'json', 'xml', 'html')
+                headers: {
+                            "Authorization": "Bearer " + accessToken
+                        },
+                success: function(response) {
+                    // Handle successful response
+                    console.log('Delete successfully ..:', response);
+                    window.location.reload();
+                    // window.location.replace('/task/dashboard_page/');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Handle errors
+                    console.error('Error:', textStatus, errorThrown);
+                },
+                complete: function() {
+                    // This function runs regardless of success or error
+                    console.log('Request complete.');
+                }
+            });   
+        }
+        function showCreateProjectForm() {
+            $('#overlay').removeClass('hidden');
+            $('#create_project').removeClass('hidden');
+            $('body').css('overflow', 'hidden');
+        }
+        function hideCreateProjectForm() {
+            $('#overlay').addClass('hidden');
+            $('#create_project').addClass('hidden');
+            $('body').css('overflow', 'auto');
+        }
 
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        // Handle errors
-                        console.error('Error:', textStatus, errorThrown);
-                    },
-                    complete: function() {
-                        // This function runs regardless of success or error
-                        console.log('Request complete.');
-                    }
-                });
-                
-            }
+
         $(document).ready(function() {
             console.log("accessToken my value... ", accessToken)
 
-            $("#submit_button").click(function(event) {
+            $('#logout_button').click(function(event) {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                window.location.href = '/login_page/'; // Example redirect
+            });
+
+            $("#project_submit_button").click(function(event) {
                 var project_name = $("#project_name").val();
                 var project_start_date = $("#project_start_date").val();
                 var project_end_date = $("#project_end_date").val();
@@ -205,7 +249,7 @@
                         }
                         });
                 } else{
-                    $("#null_field").text("Please fill all requied field");
+                    $("#null_create_project").text("Please fill all requied field");
                 }
             } )
 
@@ -234,9 +278,8 @@
                             render: function (data, type, row) {
                                 // 'row' contains the full data for the current row
                                 return `
-                                    <button class="btn btn-info btn-sm view-btn" style="background-color: silver;" data-id="${row.id}">View</button>
-                                    {% comment %} <button class="btn btn-primary btn-sm edit-btn" style="background-color: #007bff;color:white;" onclick="window.location.href = '/task/update_project/'+${row.id}+'/';" data-id="${row.id}">Edit</button> {% endcomment %}
-                                    <button class="btn btn-primary btn-sm edit-btn" style="background-color: #007bff;color:white;" onclick='editProject(${JSON.stringify(row)})' data-id="${row.id}">Edit</button>
+                                    <button class="btn btn-info btn-sm view-btn" style="background-color: silver;" data-id="${row.id}" onclick="window.location.href='/task/manager_task_page/' + ${row.id} + '/';">View</button>
+                                    <button class="btn btn-primary btn-sm edit-btn" style="background-color: #007bff;color:white;" onclick='editProject(${JSON.stringify(row)})' data-id="${row.id}" >Edit</button>
                                     <button class="btn btn-danger btn-sm delete-btn" style="background-color: #f44336;color:white;" onclick="deletePoject(${row.id})" data-id="${row.id}">Delete</button>
                                 `;
                             },
@@ -252,84 +295,15 @@
 
 
 
-    {% comment %} <script>
-                
-    $(document).ready(function() {
-        var accessToken = localStorage.getItem('accessToken');
-        // var accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU4MzUwODcwLCJpYXQiOjE3NTgyNzg4NzAsImp0aSI6IjE1NGE2NjgyNWVkNTQ1YjY5YTYzZWRmZjFhOTVmYTJlIiwidXNlcl9pZCI6MjV9.hE4d-EZ5dKz9mu-z33-jHhUbtRiDYqk89LNS4un63Xk";
-
-        console.log("accessToken my value... ", accessToken)
-        // Replace 'your_data.json' with the actual path to your JSON file or API endpoint
-        $.ajax({
-            url: 'http://127.0.0.1:8000/task/project/', // Or an API endpoint returning JSON
-            type: 'GET',
-            dataType: 'json',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            },
-            /*
-            beforeSend: function (xhr) {
-            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
-            },*/
-
-            success: function(data) {
-                console.log("console data ... ", data);
-                var tableBody = $('#table_id tbody');
-                $.each(data, function(index, item) {
-                    var row = '<tr>';
-                    row += '<td>' + item.project_name + '</td>'; // Assuming your JSON has an 'id' field
-                    row += '<td>' + item.project_start_date + '</td>'; // Assuming your JSON has a 'name' field
-                    row += '<td>' + item.project_end_date + '</td>'; // Assuming your JSON has a 'country' field
-                    row += '</tr>';
-                    tableBody.append(row);
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-            }
-            /*
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log('Error fetching data: ' + textStatus, errorThrown);
-            }*/
-
-        });
-    });
-</script> {% endcomment %}
-
-
- 
 
 
 
 
 
-{% comment %} <script>
-            // Your JavaScript/jQuery code will go here
-    // Inside the <script> tags in mytemplate.html
- 
-    $(document).ready(function() {
-        $.ajax({
-            url: '/task/project/', // Your DRF API endpoint
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                var tableBody = $('#itemTable tbody');
-                tableBody.empty(); // Clear existing rows if any
+    
 
-                $.each(data, function(index, item) {
-                    var row = $('<tr>');
-                    row.append($('<td>').text(item.project_name));
-                    row.append($('<td>').text(item.project_start_date));
-                    row.append($('<td>').text(item.project_end_date));
-                    // row.append($('<td>').text(new Date(item.created_at).toLocaleString()));
-                    tableBody.append(row);
-                });
-            },
-            error: function(error) {
-                console.error('Error fetching data:', error);
-            }
-        });
-    });
-</script>
- {% endcomment %}
+
+
+
+
+

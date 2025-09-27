@@ -12,11 +12,11 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ManagerTask)
 class ManagerTaskAdmin(admin.ModelAdmin):
-    list_display = ['id', 'task_name', 'start_date', 'end_date', 'assign', 'project']
+    list_display = ['id', 'task_name', 'manager_start_date', 'manager_end_date', 'assign', 'project']
 
 @admin.register(EmployeeTask)
 class EmployeeTaskAdmin(admin.ModelAdmin):
-    list_display = ['id', 'task_start_date', 'task_end_date', 'user', 'manager_task']
+    list_display = ['id', 'employee_start_date', 'employee_end_date', 'user', 'manager_task']
 
 @admin.register(Massage)
 class MassageAdmin(admin.ModelAdmin):

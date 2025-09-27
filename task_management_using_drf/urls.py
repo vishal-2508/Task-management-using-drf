@@ -17,9 +17,26 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from rest_framework.routers import DefaultRouter
+# from task.views import ParentViewSet
+# router = DefaultRouter()
+# router.register(r'parents', ParentViewSet)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('accounts.urls')),
     path('task/', include('task.urls')),
 
+    # path('api/', include(router.urls)),
+
 ]
+
+
+
+
+
+
+
+
+# urlpatterns = [
+# ]

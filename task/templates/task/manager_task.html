@@ -3,101 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Task</title>
+    <title>ManagerTask</title>
+    <script>
+        // Check authentication status
+        var accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            // Redirect to login page if not authenticated
+            window.location.replace('/login_page/');
+        }
+        // If authenticated, the rest of the page content will load
+    </script>
     <style>
-    table, th, td {
-        border: 3px solid black;
-        border-collapse: collapse;
-        padding: 6px;
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+            backdrop-filter: blur(5px); /* Blur effect */
+            -webkit-backdrop-filter: blur(5px); /* For Safari */
+            z-index: 99; /* Ensure it's above main content */
+        }
+        .task-form-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 100; /* Ensure it's above the overlay */
+        }
+        .hidden {
+            display: none;
     }
-</style>
-</head>
+
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
+    
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+
 <body>
-    <h2>Manager Task page</h2>
-    <h3><p style="color: green;">Project Name : {{project_name}}</p></h3>
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <h1>manager task</h1>
 
-    {% comment %}
-        This html form use for add task.
-    {% endcomment %}
-    <form action="" method="POST">
-        {% csrf_token %}
-        <label for="task">Task Name : </label>
-        <input type="text" id='task' name='task_name' required> <br><br>
-        <label for="start_date">Start Date : </label>
-        <input type="date" id='start_date' name='start_date' required> <br><br>
-        <label for="end_date">End Date : </label>
-        <input type="date" id='end_date' name='end_date' required> <br><br>
-        <label for="assign">Assign To : </label>
-        <input type="text" id='assign' name='assign' required> <br><br>
-        <input type="hidden" id="operation" name="operation" value="add task">
-        <button type="submit">Add Task</button><br><br>
-    </form><br>
+    <div id="projectNumber" data-project_id="{{ project_id }}">
+    <!-- Content of your element -->
+    </div>
+    {{project_id}}
 
-    {% comment %}
-        This html form use for display employee activity. 
-    {% endcomment %}
-    <form action="" method="POST">
-        {% csrf_token %}
-        <label for="employee">Employee activity : </label>
-        <input type="text" id='employee' name='employee_username' required> <br><br>
-        <input type="hidden" id="operation" name="operation" value="employee activity">
-        <button type="submit">Search</button><br><br>
-    </form>
-    {% if Go_dashboard %}
-    <a href="{% url 'dashboard_page' %}">Go Back</a>
-    {% else %}
-    <a href="{% url 'manager_task' project_id %}">Go Back</a>
-    {% endif %}
+    <div id="overlay" class="overlay hidden"></div>
 
-    <br><br><h3>All Task</h3>
-    {% if employee_task_details %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Task Name</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Assign</th>
-                    <th>Task Start Date</th>
-                    <th>Task End Date</th>
-                    <th>Status</th>
-                    <th>Delete</th>
-                    <th>Massage</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in employee_task_details %}
-                <tr>
-                    <td>{{ item.manager_task.task_name }}</td>
-                    <td>{{ item.manager_task.start_date }}</td>
-                    <td>{{ item.manager_task.end_date }}</td>
-                    <td>{{ item.manager_task.assign }}</td>
-                    <td>{{ item.task_start_date }}</td>
-                    <td>{{ item.task_end_date }}</td>
-                    <td>
-                        {% if item.task_end_date %}
-                            <h4>Success</h4>
-                        {% else %}
-                            <h4>Pending</h4>
-                        {% endif %}
-                    </td>
-                    <td><a href="{% url 'delete_manager_task' item.manager_task.id %}">delete</a></td>
-                    <td>
-                        <a href="{% url 'massage_page' item.id %}">Click</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <h3>No record of the task</h3>
-    {% endif %}
+    <button onclick="showCreateTaskForm()">Create New Task</button> <br> <br>
+
+    <div id="createTask"  class="task-form-container hidden">
+        <h2>Create Task</h2>
+        <b> <p id="nullCreateTask"></p> </b>
+        <label for="taskName">Project Name:</label>
+        <input type="text" id="taskName" name="taskName" ><br><br>
+        <label for="managerStartDate">Project Start Date:</label>
+        <input type="date" id="managerStartDate" name="managerStartDate" ><br><br>
+        <label for="managerEndDate">Project End Date:</label>
+        <input type="date" id="managerEndDate" name="managerEndDate" ><br><br>
+        <label for="assign">Project End Date:</label>
+        <input type="text" id="assign" name="assign" ><br><br>
+        <button id="project_submit_button" type="submit">Save</button><br><br>
+        <button type="button" onclick="hideCreateProjectForm()">Cancel</button>
+    </div>
+
+    <div id="editTaskForm" class="task-form-container hidden">
+        <h2>Edit Task</h2>
+        <b> <p id="nullEditTask"></p> </b>
+        <label for="editTaskName">Task Name : </label>
+        <input type="text" id="editTaskName" name="editTaskName" ><br><br>
+        <label for="editManagerStartDate">Task Start Date : </label>
+        <input type="date" id="editManagerStartDate" name="editManagerStartDate" ><br><br>
+        <label for="editManagerEndDate">Task End Date : </label>
+        <input type="date" id="editManagerEndDate" name="editManagerEndDate" ><br><br>
+        <b> <p id="notValidAssign" style="display: none;"></p> </b>
+        <label for="editAssign">Assign : </label>
+        <input type="text" id="editAssign" name="editAssign" ><br><br>
+        {% comment %} <input type="hidden" id="editUserId" name="editUserId" value="no set user id"> {% endcomment %}
+        <input type="hidden" id="editTaskDetails" name="editTaskDetails" value="no set task detail">
+        <button type="button" onclick="saveChanges()">Save</button>
+        <button type="button" onclick="cancelEdit()">Cancel</button>
+    </div>
+
+    <table id="table_id" class="display">
+        <thead>
+            <tr>
+                <th>sr no</th>
+                <th>Project Name</th>
+                <th>Task Name</th>
+                <th>Task Start Date</th>
+                <th>Task End Date</th>
+                <th>Assign</th>
+                <th>Employee Start Date</th>
+                <th>Employee End Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+    </table>
+
 </body>
-</html> 
+</html>
+
+
+<script>
+    var project_id = $('#projectNumber').data('project_id');
+    
+    function saveChanges() {
+        var editTaskName = $("#editTaskName").val();
+        var editManagerStartDate = $("#editManagerStartDate").val();
+        var editManagerEndDate = $("#editManagerEndDate").val();
+        var editAssign = $("#editAssign").val();
+        var taskDetailObjects = JSON.parse($("#editTaskDetails").val());
+        if(editTaskName != '' &&  editManagerStartDate != '' && editManagerEndDate != '' && editAssign != '' ){
+            $.ajax({
+                url: `/task/users_profile/${editAssign}/`,
+                method: 'GET', // or 'POST', 'PUT', etc.
+                dataType: 'json', // or 'text', 'html', etc.
+                success: function(data) {
+                    // Execute the provided callback function with the received data
+                    //  if condition exiqute when data is massage = this user name not exist
+                    if ('massage' in data) {
+                        $("#notValidAssign").show();
+                        $("#notValidAssign").text(data.massage);
+                    } else {
+                        var managerTaskPayload = {
+                            "task_name" : editTaskName,
+                            "manager_start_date" : editManagerStartDate,
+                            "manager_end_date" : editManagerEndDate,
+                            "assign" : editAssign,
+                            "project" : taskDetailObjects.manager_task.project.id
+                            }
+                        $.ajax({
+                            url: '/task/managertask/' + taskDetailObjects.manager_task.id +'/', // Your server-side endpoint
+                            type: 'PUT', // Or POST if your API uses it for updates
+                            dataType: 'json', // Specify content type for JSON data
+                            data: managerTaskPayload, // Send updated data as JSON
+                            headers: {
+                                        "Authorization": "Bearer " + accessToken
+                                    },
+                            success: function(response) {
+                                // Handle successful update (e.g., update the displayed record, close modal)
+                                console.log("Manager task updated successfully:", response);
+                                // window.location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("Error updating record:", error);
+                            },
+                            complete: function() {
+                                // This function is executed regardless of success or failure
+                                console.log('API call completed.');
+                            }
+                        });
+                        
+                        var employeeTaskPayload = {
+                            "manager_task" : taskDetailObjects.manager_task.id,
+                            "user" : data[0].id
+                            }
+                        $.ajax({
+
+                            url: '/task/employeetask/' + taskDetailObjects.id +'/', // Your server-side endpoint
+                            type: 'PUT', // Or POST if your API uses it for updates
+                            dataType: 'json', // Specify content type for JSON data
+                            data: employeeTaskPayload, // Send updated data as JSON
+                            headers: {
+                                        "Authorization": "Bearer " + accessToken
+                                    },
+                            success: function(response) {
+                                // Handle successful update (e.g., update the displayed record, close modal)
+                                console.log("Employee task updated successfully:", response);
+                                window.location.reload();
+
+                                // window.location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("Error updating record:", error);
+                            },
+                            complete: function() {
+                                // This function is executed regardless of success or failure
+                                console.log('API call completed.');
+                            }
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                console.error("AJAX error:", status, error);
+                }
+            });
+        } else{
+            $("#nullEditTask").text("Please fill all requied field");
+        } }
+
+    function cancelEdit() {
+        $('#overlay').addClass('hidden');
+        $('#editTaskForm').addClass('hidden');
+        $('body').css('overflow', 'auto');
+        }
+
+    function editTask(taskDetails) {
+        $('#overlay').removeClass('hidden');
+        $('#editTaskForm').removeClass('hidden');
+        $('body').css('overflow', 'hidden');
+        let taskDetailString = JSON.stringify(taskDetails);
+        $("#editTaskName").val(taskDetails.manager_task.task_name);
+        $("#editManagerStartDate").val(taskDetails.manager_task.manager_start_date);
+        $("#editManagerEndDate").val(taskDetails.manager_task.manager_end_date);
+        $("#editAssign").val(taskDetails.manager_task.assign);
+        $("#editTaskDetails").val(taskDetailString);
+        }
+    
+    function deleteTask(taskId) {
+        console.log("the project .delete task .. ",taskId)
+        $.ajax({
+            url: '/task/managertask/' + taskId + '/', // Replace with your API endpoint
+            method: 'DELETE', // Or 'POST', 'PUT', 'DELETE'
+            dataType: 'json', // Expected data type from the server (e.g., 'json', 'xml', 'html')
+            headers: {
+                        "Authorization": "Bearer " + accessToken
+                    },
+            success: function(response) {
+                // Handle successful response
+                console.log('Delete successfully ..:', response);
+                window.location.reload();
+                // window.location.replace('/task/dashboard_page/');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                // Handle errors
+                console.error('Error:', textStatus, errorThrown);
+            },
+            complete: function() {
+                // This function runs regardless of success or error
+                console.log('Request complete.');
+            }
+        });   
+    }
+    function showCreateProjectForm() {
+        $('#overlay').removeClass('hidden');
+        $('#create_project').removeClass('hidden');
+        $('body').css('overflow', 'hidden');
+    }
+    function hideCreateProjectForm() {
+        $('#overlay').addClass('hidden');
+        $('#create_project').addClass('hidden');
+        $('body').css('overflow', 'auto');
+    }
+
+
+    $(document).ready(function() {
+        var accessToken = localStorage.getItem('accessToken');
+
+        console.log("value is now  : ", project_id)
+
+        $('#table_id').DataTable( {
+            ajax: {
+                {% comment %} url: '/task/managertask/' + project_id + '/', {% endcomment %}
+                url: 'http://127.0.0.1:8000/task/task_detail/',
+                type: 'GET', // Or 'POST', 'PUT', etc. depending on your API
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+                },
+                dataSrc: ''           
+            },
+                
+                columns: [
+                        {
+                            data: null, // No data source for this column
+                            title: "Sr. No.",
+                            render: function (data, type, row, meta) {
+                                return meta.row + 1; // Returns the row index + 1
+                            }
+                        },
+                        { data: 'manager_task.project.project_name' },
+                        { data: 'manager_task.task_name' },
+                        { 
+                            data: 'manager_task.manager_start_date',
+                            render: function ( data, type, row ) {
+                                var dateSplit = data.split('-');
+                                return `${dateSplit[2]}-${dateSplit[1]}-${dateSplit[0]}`;
+                            }
+                        },
+                        {
+                            data: 'manager_task.manager_end_date',
+                            render: function ( data, type, row ) {
+                                var dateSplit = data.split('-');
+                                return `${dateSplit[2]}-${dateSplit[1]}-${dateSplit[0]}`;
+                            }
+                        },
+                        { data: 'manager_task.assign' },
+                        { data: 'employee_start_date' },
+                        { data: 'employee_end_date' },
+                        {
+                            data: 'employee_end_date',
+                            render: function ( data, type, row ){
+                                if(data){
+                                    return "<b>Success</b>"
+                                }else {
+                                    return "<b>Pending</b>"
+                                }
+                            }
+                        },
+                        {
+                            data: null, // No direct data source for this column
+                            render: function (data, type, row) {
+                                // 'row' contains the full data for the current row
+                                return `
+                                    <button class="btn btn-primary btn-sm edit-btn" style="background-color: #007bff;color:white;" onclick='editTask(${JSON.stringify(row)})' data-id="${row.id}" >Edit</button>
+                                    <button class="btn btn-danger btn-sm delete-btn" style="background-color: #f44336;color:white;" onclick="deleteTask(${row.manager_task.id})" data-id="${row.id}">Delete</button>
+                                `;
+                            },
+                            {% comment %} title: "Actions" // Column header {% endcomment %}
+                        }
+                    ],
+                    initComplete: function(settings, json) {
+                        var table = this.api();
+                        table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                            var data = this.data();
+                            // Remove a row based on a condition after it has been drawn
+                            if (data.manager_task.project.id != project_id) {
+                                this.remove();
+                            }
+                        });
+                        table.draw();
+                    }
+
+        } );
+
+
+    
+    }) 
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+</script>
+
+
+                {% comment %} dataSrc: 'project_managertask' {% endcomment %}
+                {% comment %} //console.log("value ", project_name) {% endcomment %}
+
+
+
+                    {% comment %} { data: 'task_name' },
+
+                    { data: 'start_date' },
+                    { data: 'end_date' } {% endcomment %}
+
+
+
+                    

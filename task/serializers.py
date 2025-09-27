@@ -1,14 +1,11 @@
 from rest_framework import serializers
+from accounts.models import User
 from .models import *
 
 class MassageSerializers(serializers.ModelSerializer):
-    # password = serializers.CharField(write_only=True)
-    # print('password : ', password)
     class Meta:
         model = Massage
         fields = "__all__"
-        # include = "managertask_employeetask"
-        # fields = ['massage_detail']
 
 class EmployeeTaskSerializer(serializers.ModelSerializer):
     employeetask_massage = MassageSerializers(read_only=True)
@@ -17,14 +14,6 @@ class EmployeeTaskSerializer(serializers.ModelSerializer):
         model = EmployeeTask
         fields = "__all__"
         include = ["employeetask_massage"]
-        # fields = ['task_start_date', 'task_end_date', 'employeetask_massage']
-
-# class EmployeeTaskSerializer(serializers.ModelSerializer):
-#     # employeetask_massage = MassageSerializers(many=True, read_only=True)
-
-#     class Meta:
-#         model = EmployeeTask
-#         fields = ['task_start_date', 'task_end_date']
 
 class ManagerTaskSerializer(serializers.ModelSerializer):
     managertask_employeetask = EmployeeTaskSerializer(read_only=True)
@@ -33,7 +22,6 @@ class ManagerTaskSerializer(serializers.ModelSerializer):
         model = ManagerTask
         fields = "__all__"
         include = ["managertask_employeetask"]
-        # fields = ['task_name', 'start_date', 'end_date', 'assign', 'managertask_employeetask']
 
 class ProjectSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -43,5 +31,68 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = "__all__"
         include = ["project_managertask"]
-        # fields = ['project_name', 'project_start_date', 'project_end_date', 'project_managertask']
+
+
+
+class ProjectSerializerGetTask(serializers.ModelSerializer):
+    # user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+
+class ManagerTaskSerializerGetTask(serializers.ModelSerializer):
+    project = ProjectSerializerGetTask(read_only=True)
+
+    class Meta:
+        model = ManagerTask
+        fields = "__all__"
+        include = ["project"]
+
+class EmployeeTaskSerializerGetTask(serializers.ModelSerializer):
+    manager_task = ManagerTaskSerializerGetTask(read_only=True)
+
+    class Meta:
+        model = EmployeeTask
+        fields = "__all__"
+        include = ["manager_task"]
+
+class MassageSerializersGetTask(serializers.ModelSerializer):
+    employee_task = EmployeeTaskSerializerGetTask(read_only=True)
+
+    class Meta:
+        model = Massage
+        fields = "__all__"
+        include = ["employee_task"]
+
+
+### this is brother serializer (ProjectSerializer1) after complite the project you can delete this serializers.....
+
+class ProjectSerializer1(serializers.ModelSerializer):
+    # user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+
+class ManagerTaskProjectSerializer(serializers.ModelSerializer):
+    project = ProjectSerializer1(read_only = True )
+
+    class Meta:
+        model = ManagerTask
+        # fields = "__all__"
+        fields = ["id", "task_name", "manager_start_date","manager_end_date", 'project' ]
+
+
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'user_type'] 
+
+
+
+
 
