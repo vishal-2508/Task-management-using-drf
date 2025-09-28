@@ -19,13 +19,12 @@
         background-color: #04AA6D;
         color: white;
         }
-        </head>
-    </style>
-    
+    </style>  
+</head>
 
 <body>
     <h2>Registration page</h2>
-    <b> <p id="null_field"></p> </b>
+    <b> <p id="nullRegistration"></p> </b>
     {% comment %} <form action="" method="POST"> {% endcomment %}
     {% comment %} <form> {% endcomment %}
         <label for="user_type">User Type : </label>
@@ -61,54 +60,43 @@
         console.log(user_type, username, password, email, first_name, last_name)
         if(user_type != "" && username != "" && password != "" && first_name != "" && last_name != "")
         {
-
-            console.log("enter payload")
-            var payload = {
-                "user_type" : user_type,
-                "username" : username,
-                "password" : password,
-                "email" : email,
-                "first_name" : first_name,
-                "last_name" : last_name
-            }
-            $.ajax({
-            url: 'http://127.0.0.1:8000/registration/', // Replace with your API endpoint
-            method: 'POST', // HTTP method (GET, POST, PUT, DELETE, etc.)
-            dataType: 'json', // Expected data type of the response (e.g., 'json', 'xml', 'html')
-            data : payload, // Data to be sent in the request body
-
-            success: function(response) {
-                // This function is executed if the request is successful
-                console.log('API call successful:', response);
-                window.location.replace('/login_page/');
-                
-                /*
-                console.log('API call successful:');
-                // Process the received data here
-                if (response.status === 'success') { // Example: check a 'status' field in the response
-                    window.location.href = 'login.html/'; // Redirect to the thank you page
-                    // Or, if the server provides the redirect URL in the response:
-                    // window.location.href = response.redirectUrl;
-                } else {
-                    // Handle other success scenarios or display messages
-                    console.log('AJAX request successful, but no redirect needed.');
+            var user_type_sentence_case = user_type.charAt(0).toUpperCase() + user_type.slice(1)
+            if(user_type_sentence_case == "Employee" || user_type_sentence_case == "Manager" ){
+                console.log("enter payload")
+                var payload = {
+                    "user_type" : user_type_sentence_case,
+                    "username" : username,
+                    "password" : password,
+                    "email" : email,
+                    "first_name" : first_name,
+                    "last_name" : last_name
                 }
-                 */
-            },
-            error: function(xhr, status, error) {
-                // This function is executed if the request fails
-                console.error('API call failed:', status, error);
-                // Handle the error appropriately
-            },
-            complete: function() {
-                // This function is executed regardless of success or failure
-                console.log('API call completed.');
+                $.ajax({
+                url: 'http://127.0.0.1:8000/registration/', // Replace with your API endpoint
+                method: 'POST', // HTTP method (GET, POST, PUT, DELETE, etc.)
+                dataType: 'json', // Expected data type of the response (e.g., 'json', 'xml', 'html')
+                data : payload, // Data to be sent in the request body
+                success: function(response) {
+                    // This function is executed if the request is successful
+                    console.log('API call successful:', response);
+                    window.location.replace('/login_page/');
+                },
+                error: function(xhr, status, error) {
+                    // This function is executed if the request fails
+                    console.error('API call failed:', status, error);
+                    // Handle the error appropriately
+                },
+                complete: function() {
+                    // This function is executed regardless of success or failure
+                    console.log('API call completed.');
+                }
+                });
+            } else{
+                $("#nullRegistration").text("Incorrect user type")
+
             }
-            });
-        }
-        else{
-            document.getElementById("null_field").innerHTML = "Please fill all requied field";
-           // alert("Enter all Field which is required")
+        } else{
+            $("#nullRegistration").text("Please fill all requied field")
         } 
     });
     });

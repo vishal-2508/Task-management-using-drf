@@ -6,9 +6,21 @@
     <title>Login</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
-
-
+    <style>
+        a {
+        text-decoration: none;
+        display: inline-block;
+        padding: 8px 16px;
+        }
+        a:hover {
+        background-color: #ddd;
+        color: black;
+        }
+        .previous {
+        background-color: #04AA6D;
+        color: white;
+        }
+    </style>
 
 </head>
 <body>
@@ -21,6 +33,8 @@
     <label for="password">Password : </label>
     <input type="password" id='password' name='password' required> <br><br>
     <button id="submitbtn" type="submit">Login</button><br><br>
+    <a href="{% url 'registration_page' %}" class="previous">Registration &raquo;</a>
+    
 </body>
 </html>
 
@@ -50,8 +64,22 @@
                     console.log('API call successful:', response);
                     localStorage.setItem('accessToken', response.access);
                     localStorage.setItem('refreshToken', response.refresh);
-                    window.location.replace('/task/dashboard_page/');
-                    // Process the received data here
+                    // This ajax call to get user type and set as userType in localStorage
+                    $.ajax({
+                        url: `/task/users_profile/${username}/`,
+                        method: 'GET', // or 'POST', 'PUT', etc.
+                        dataType: 'json', // or 'text', 'html', etc.
+                        headers: {
+                                    "Authorization": "Bearer " + response.access
+                                },
+                        success: function(data) {
+                            localStorage.setItem('userType', data[0].user_type);
+                            window.location.replace('/task/dashboard_page/');
+                        },
+                        error: function(xhr, status, error) {
+                        console.error("AJAX error:", status, error);
+                        }
+                    })
                 },
                 error: function(xhr, status, error) {
                     // This function is executed if the request fails

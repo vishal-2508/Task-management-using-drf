@@ -14,6 +14,20 @@
         // If authenticated, the rest of the page content will load
     </script>
     <style>
+        a {
+        text-decoration: none;
+        display: inline-block;
+        padding: 8px 16px;
+        }
+        a:hover {
+        background-color: #ddd;
+        color: black;
+        }
+        .previous {
+        background-color: #04AA6D;
+        color: white;
+        }
+
         .overlay {
             position: fixed;
             top: 0;
@@ -39,7 +53,6 @@
         .hidden {
             display: none;
     }
-
     </style>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -50,29 +63,26 @@
 
 <body>
     <h1>manager task</h1>
-
-    <div id="projectNumber" data-project_id="{{ project_id }}">
-    <!-- Content of your element -->
-    </div>
-    {{project_id}}
+    <div id="projectNumber" data-project_id="{{ project_id }}"></div>
 
     <div id="overlay" class="overlay hidden"></div>
 
-    <button onclick="showCreateTaskForm()">Create New Task</button> <br> <br>
+    <button onclick="showCreateTaskForm()" style="font-weight: bold;">Create New Task</button> <br> <br>
 
     <div id="createTask"  class="task-form-container hidden">
         <h2>Create Task</h2>
         <b> <p id="nullCreateTask"></p> </b>
-        <label for="taskName">Project Name:</label>
+        <label for="taskName">Task Name : </label>
         <input type="text" id="taskName" name="taskName" ><br><br>
-        <label for="managerStartDate">Project Start Date:</label>
+        <label for="managerStartDate">Task Start Date : </label>
         <input type="date" id="managerStartDate" name="managerStartDate" ><br><br>
-        <label for="managerEndDate">Project End Date:</label>
+        <label for="managerEndDate">Task End Date : </label>
         <input type="date" id="managerEndDate" name="managerEndDate" ><br><br>
-        <label for="assign">Project End Date:</label>
+        <b> <p id="notValidAssign" style="display: none;"></p> </b>
+        <label for="assign">Assign : </label>
         <input type="text" id="assign" name="assign" ><br><br>
-        <button id="project_submit_button" type="submit">Save</button><br><br>
-        <button type="button" onclick="hideCreateProjectForm()">Cancel</button>
+        <button id="taskSubmitButton" type="submit">Save</button><br><br>
+        <button type="button" onclick="hideCreateTaskForm()">Cancel</button>
     </div>
 
     <div id="editTaskForm" class="task-form-container hidden">
@@ -84,10 +94,9 @@
         <input type="date" id="editManagerStartDate" name="editManagerStartDate" ><br><br>
         <label for="editManagerEndDate">Task End Date : </label>
         <input type="date" id="editManagerEndDate" name="editManagerEndDate" ><br><br>
-        <b> <p id="notValidAssign" style="display: none;"></p> </b>
+        <b> <p id="editNotValidAssign" style="display: none;"></p> </b>
         <label for="editAssign">Assign : </label>
         <input type="text" id="editAssign" name="editAssign" ><br><br>
-        {% comment %} <input type="hidden" id="editUserId" name="editUserId" value="no set user id"> {% endcomment %}
         <input type="hidden" id="editTaskDetails" name="editTaskDetails" value="no set task detail">
         <button type="button" onclick="saveChanges()">Save</button>
         <button type="button" onclick="cancelEdit()">Cancel</button>
@@ -109,6 +118,7 @@
             </tr>
         </thead>
     </table>
+    <a href="{% url 'dashboard_page' %}" class="previous">&laquo; Go To Back</a>
 
 </body>
 </html>
@@ -128,12 +138,15 @@
                 url: `/task/users_profile/${editAssign}/`,
                 method: 'GET', // or 'POST', 'PUT', etc.
                 dataType: 'json', // or 'text', 'html', etc.
+                headers: {
+                            "Authorization": "Bearer " + accessToken
+                        },
                 success: function(data) {
                     // Execute the provided callback function with the received data
                     //  if condition exiqute when data is massage = this user name not exist
-                    if ('massage' in data) {
-                        $("#notValidAssign").show();
-                        $("#notValidAssign").text(data.massage);
+                    if ('massage' in data || data[0].user_type == "Manager") {
+                        $("#editNotValidAssign").show();
+                        $("#editNotValidAssign").text("This User name is not exist.");
                     } else {
                         var managerTaskPayload = {
                             "task_name" : editTaskName,
@@ -153,7 +166,6 @@
                             success: function(response) {
                                 // Handle successful update (e.g., update the displayed record, close modal)
                                 console.log("Manager task updated successfully:", response);
-                                // window.location.reload();
                             },
                             error: function(xhr, status, error) {
                                 console.error("Error updating record:", error);
@@ -169,7 +181,6 @@
                             "user" : data[0].id
                             }
                         $.ajax({
-
                             url: '/task/employeetask/' + taskDetailObjects.id +'/', // Your server-side endpoint
                             type: 'PUT', // Or POST if your API uses it for updates
                             dataType: 'json', // Specify content type for JSON data
@@ -181,8 +192,6 @@
                                 // Handle successful update (e.g., update the displayed record, close modal)
                                 console.log("Employee task updated successfully:", response);
                                 window.location.reload();
-
-                                // window.location.reload();
                             },
                             error: function(xhr, status, error) {
                                 console.error("Error updating record:", error);
@@ -209,10 +218,10 @@
         }
 
     function editTask(taskDetails) {
+        let taskDetailString = JSON.stringify(taskDetails);
         $('#overlay').removeClass('hidden');
         $('#editTaskForm').removeClass('hidden');
         $('body').css('overflow', 'hidden');
-        let taskDetailString = JSON.stringify(taskDetails);
         $("#editTaskName").val(taskDetails.manager_task.task_name);
         $("#editManagerStartDate").val(taskDetails.manager_task.manager_start_date);
         $("#editManagerEndDate").val(taskDetails.manager_task.manager_end_date);
@@ -221,7 +230,6 @@
         }
     
     function deleteTask(taskId) {
-        console.log("the project .delete task .. ",taskId)
         $.ajax({
             url: '/task/managertask/' + taskId + '/', // Replace with your API endpoint
             method: 'DELETE', // Or 'POST', 'PUT', 'DELETE'
@@ -233,7 +241,6 @@
                 // Handle successful response
                 console.log('Delete successfully ..:', response);
                 window.location.reload();
-                // window.location.replace('/task/dashboard_page/');
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 // Handle errors
@@ -245,26 +252,110 @@
             }
         });   
     }
-    function showCreateProjectForm() {
+    function showCreateTaskForm() {
         $('#overlay').removeClass('hidden');
-        $('#create_project').removeClass('hidden');
+        $('#createTask').removeClass('hidden');
         $('body').css('overflow', 'hidden');
     }
-    function hideCreateProjectForm() {
+    function hideCreateTaskForm() {
         $('#overlay').addClass('hidden');
-        $('#create_project').addClass('hidden');
+        $('#createTask').addClass('hidden');
         $('body').css('overflow', 'auto');
     }
 
-
     $(document).ready(function() {
-        var accessToken = localStorage.getItem('accessToken');
 
-        console.log("value is now  : ", project_id)
+            $("#taskSubmitButton").click(function(event) {
+                var taskName = $("#taskName").val();
+                var managerStartDate = $("#managerStartDate").val();
+                var managerEndDate = $("#managerEndDate").val();
+                var assign = $("#assign").val();
+                if(taskName != '' &&  managerStartDate != '' && managerEndDate != '' && assign != '' ){
+                    // this ajax give user detail when assign (username) is exist
+                    $.ajax({
+                        url: `/task/users_profile/${assign}/`,
+                        method: 'GET', // or 'POST', 'PUT', etc.
+                        dataType: 'json', // or 'text', 'html', etc.
+                        headers: {
+                                    "Authorization": "Bearer " + accessToken
+                                },
+                        success: function(data) {
+                            // Execute the provided callback function with the received data
+                            //  if condition exiqute when data is massage = this user name not exist
+                            if ('massage' in data || data[0].user_type == "Manager") {
+                                $("#notValidAssign").show();
+                                $("#notValidAssign").text("This User name is not exist.");
+                            } else {
+                                var managerTaskPayload = {
+                                    "task_name" : taskName,
+                                    "manager_start_date" : managerStartDate,
+                                    "manager_end_date" : managerEndDate,
+                                    "assign" : assign,
+                                    "project" : project_id
+                                    }   
+                                // this ajax call is create manager task when assign is exist in user models 
+                                $.ajax({
+                                    url: '/task/managertask/',
+                                    method: 'POST', // HTTP method (GET, POST, PUT, DELETE, etc.)
+                                    dataType: 'json', // Expected data type of the response (e.g., 'json', 'xml', 'html')
+                                    data : managerTaskPayload,
+                                    headers: {
+                                            "Authorization": "Bearer " + accessToken
+                                        },
+                                    success: function(response) {
+                                        // This function is executed if the request is successful
+                                        console.log('task create successful:', response);
+                                        var employeeTaskPayload = {
+                                            "manager_task" : response.id,
+                                            "user" : data[0].id
+                                        }
+                                        // this ajax call when new manager is create
+                                        $.ajax({
+                                            url: '/task/employeetask/', // Your server-side endpoint
+                                            type: 'POST', // Or POST if your API uses it for updates
+                                            dataType: 'json', // Specify content type for JSON data
+                                            data: employeeTaskPayload, // Send updated data as JSON
+                                            headers: {
+                                                        "Authorization": "Bearer " + accessToken
+                                                    },
+                                            success: function(response) {
+                                                // Handle successful update (e.g., update the displayed record, close modal)
+                                                console.log("Employee task updated successfully:", response);
+                                                window.location.reload();
+                                            },
+                                            error: function(xhr, status, error) {
+                                                console.error("Error updating record:", error);
+                                            },
+                                            complete: function() {
+                                                // This function is executed regardless of success or failure
+                                                console.log('API call completed.');
+                                            }
+                                        });                            
+
+                                    },
+                                    error: function(xhr, status, error) {
+                                        // This function is executed if the request fails
+                                        console.error('new Project create failed:', status, error);
+                                        // Handle the error appropriately
+                                    },
+                                    complete: function() {
+                                        // This function is executed regardless of success or failure
+                                        console.log('Project create API call completed.');
+                                    }
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                        console.error("AJAX error:", status, error);
+                        }
+                    })
+                } else{
+                    $("#nullCreateTask").text("Please fill all requied field");
+                }
+            })
 
         $('#table_id').DataTable( {
             ajax: {
-                {% comment %} url: '/task/managertask/' + project_id + '/', {% endcomment %}
                 url: 'http://127.0.0.1:8000/task/task_detail/',
                 type: 'GET', // Or 'POST', 'PUT', etc. depending on your API
                 beforeSend: function (xhr) {
@@ -272,7 +363,6 @@
                 },
                 dataSrc: ''           
             },
-                
                 columns: [
                         {
                             data: null, // No data source for this column
@@ -298,8 +388,26 @@
                             }
                         },
                         { data: 'manager_task.assign' },
-                        { data: 'employee_start_date' },
-                        { data: 'employee_end_date' },
+                        { 
+                            data: 'employee_start_date',
+                            render: function ( data, type, row) {
+                                if(data == null){
+                                    return "-";
+                                } else {
+                                    return data
+                                }
+                            } 
+                        },
+                        { 
+                            data: 'employee_end_date',
+                            render: function ( data, type, row) {
+                                if(data == null){
+                                    return "-";
+                                } else {
+                                    return data
+                                }
+                            } 
+                        },
                         {
                             data: 'employee_end_date',
                             render: function ( data, type, row ){
@@ -319,7 +427,6 @@
                                     <button class="btn btn-danger btn-sm delete-btn" style="background-color: #f44336;color:white;" onclick="deleteTask(${row.manager_task.id})" data-id="${row.id}">Delete</button>
                                 `;
                             },
-                            {% comment %} title: "Actions" // Column header {% endcomment %}
                         }
                     ],
                     initComplete: function(settings, json) {
@@ -334,38 +441,8 @@
                         table.draw();
                     }
 
-        } );
-
-
-    
+        } );    
     }) 
-
-
-
-
-
-
-
-
-
-
-    
-
-
 
 </script>
 
-
-                {% comment %} dataSrc: 'project_managertask' {% endcomment %}
-                {% comment %} //console.log("value ", project_name) {% endcomment %}
-
-
-
-                    {% comment %} { data: 'task_name' },
-
-                    { data: 'start_date' },
-                    { data: 'end_date' } {% endcomment %}
-
-
-
-                    

@@ -7,6 +7,7 @@
     <script>
         // Check authentication status
         var accessToken = localStorage.getItem('accessToken');
+        var userType = localStorage.getItem('userType');
         if (!accessToken) {
             // Redirect to login page if not authenticated
             window.location.replace('/login_page/');
@@ -61,41 +62,43 @@
 <body>
     <h2>Dashboard page</h2>
     <div style="text-align: right;">
-            <b><button id="logout_button" type="submit">Logout</button></b>
+        <button id="logoutButton" type="submit" style="font-weight: bold;">Logout</button>
     </div> <br>
+{% if userType == "Manager" %}
+
 
     <div id="overlay" class="overlay hidden"></div>
 
-    <button onclick="showCreateProjectForm()">Create New Project</button> <br> <br>
+    <button onclick="showCreateProjectForm()" style="font-weight: bold;">Create New Project</button> <br> <br>
 
-    <div id="create_project"  class="project-form-container hidden">
+    <div id="createProjectForm" class="project-form-container hidden">
         <h2>Create Project</h2>
-        <b> <p id="null_create_project"></p> </b>
-        <label for="project_name">Project Name:</label>
-        <input type="text" id="project_name" name="project_name" ><br><br>
-        <label for="project_start_date">Project Start Date:</label>
-        <input type="date" id="project_start_date" name="project_start_date" ><br><br>
-        <label for="project_end_date">Project End Date:</label>
-        <input type="date" id="project_end_date" name="project_end_date" ><br><br>
-        <button id="project_submit_button" type="submit">Save</button><br><br>
+        <b> <p id="nullCreateProject"></p> </b>
+        <label for="projectName">Project Name:</label>
+        <input type="text" id="projectName" name="projectName" ><br><br>
+        <label for="projectStartDate">Project Start Date:</label>
+        <input type="date" id="projectStartDate" name="projectStartDate" ><br><br>
+        <label for="projectEndDate">Project End Date:</label>
+        <input type="date" id="projectEndDate" name="projectEndDate" ><br><br>
+        <button id="projectSubmitButton" type="submit">Save</button><br><br>
         <button type="button" onclick="hideCreateProjectForm()">Cancel</button>
     </div>
 
-    <div id="edit_project" class="project-form-container hidden">
+    <div id="editProjectForm" class="project-form-container hidden">
         <h2>Edit Project</h2>
-        <b> <p id="null_edit_project"></p> </b>
-        <label for="editProject_name">Project Name:</label>
-        <input type="text" id="editProject_name" name="editProject_name" ><br><br>
-        <label for="editProject_start_date">Project Start Date:</label>
-        <input type="date" id="editProject_start_date" name="editProject_start_date" ><br><br>
-        <label for="editProject_end_date">Project End Date:</label>
-        <input type="date" id="editProject_end_date" name="editProject_end_date" ><br><br>
+        <b> <p id="nullEditProject"></p> </b>
+        <label for="editProjectName">Project Name:</label>
+        <input type="text" id="editProjectName" name="editProjectName" ><br><br>
+        <label for="editProjectStartDate">Project Start Date:</label>
+        <input type="date" id="editProjectStartDate" name="editProjectStartDate" ><br><br>
+        <label for="editProjectEndDate">Project End Date:</label>
+        <input type="date" id="editProjectEndDate" name="editProjectEndDate" ><br><br>
         <input type="hidden" id="editProjectDetails" name="editProjectDetails" value="no set data">
         <button type="button" onclick="saveChanges()">Save</button>
         <button type="button" onclick="cancelEdit()">Cancel</button>
     </div>
 
-    <table id="table_id" class="display">
+    <table id="projectTableId" class="display">
         <thead>
             <tr>
                 <th>sr no</th>
@@ -106,25 +109,41 @@
             </tr>
         </thead>
     </table>
-
+{% else %}
+    <table id="employeeTableId" class="display">
+        <thead>
+            <tr>
+                <th>sr no</th>
+                <th>Project Name</th>
+                <th>Task Name</th>
+                <th>Task Start Date</th>
+                <th>Task End Date</th>
+                <th>Employee Start Date</th>
+                <th>Employee End Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+    </table>
+{% endif %}
 </body>
 </html>
 
     <script>
-
+    if(userType == "Manager"){
         function saveChanges() {
-            var project_name = $("#editProject_name").val();
-            var project_start_date = $("#editProject_start_date").val();
-            var project_end_date = $("#editProject_end_date").val();
+            var editProjectName = $("#editProjectName").val();
+            var editProjectStartDate = $("#editProjectStartDate").val();
+            var editProjectEndDate = $("#editProjectEndDate").val();
             var projectDetailObjects = JSON.parse($("#editProjectDetails").val());
-            if(project_name != '' &&  project_start_date != '' && project_end_date != '' ){
+            if(editProjectName != '' &&  editProjectStartDate != '' && editProjectEndDate != '' ){
                 var payload = {
-                    "project_name" : project_name,
-                    "project_start_date" : project_start_date,
-                    "project_end_date" : project_end_date
+                    "project_name" : editProjectName,
+                    "project_start_date" : editProjectStartDate,
+                    "project_end_date" : editProjectEndDate
                     }
                 $.ajax({
-                    url: '/task/project/' + projectDetailObjects.id +'/', // Your server-side endpoint
+                    url: `/task/project/${projectDetailObjects.id}/`, // Your server-side endpoint
                     type: 'PUT', // Or POST if your API uses it for updates
                     //contentType: 'application/json', // Specify content type for JSON data
                     //data: JSON.stringify(payload), // Send updated data as JSON
@@ -147,32 +166,30 @@
                     }
                 });
             } else{
-                $("#null_edit_project").text("Please fill all requied field");
-            } }
+                $("#nullEditProject").text("Please fill all requied field");
+            } 
+        }
 
         function cancelEdit() {
             $('#overlay').addClass('hidden');
-            $('#edit_project').addClass('hidden');
+            $('#editProjectForm').addClass('hidden');
             $('body').css('overflow', 'auto');
-            }
+        }
 
         function editProject(projectDetails) {
-            $('#overlay').removeClass('hidden');
-            $('#edit_project').removeClass('hidden');
-            $('body').css('overflow', 'hidden');
             let projectDetailString = JSON.stringify(projectDetails);
-            console.log("console projectDetails : ", projectDetails)
-            // document.getElementById('table_id').classList.add('blurred');
-            $("#editProject_name").val(projectDetails.project_name);
-            $("#editProject_start_date").val(projectDetails.project_start_date);
-            $("#editProject_end_date").val(projectDetails.project_end_date);
+            $('#overlay').removeClass('hidden');
+            $('#editProjectForm').removeClass('hidden');
+            $('body').css('overflow', 'hidden');
+            $("#editProjectName").val(projectDetails.project_name);
+            $("#editProjectStartDate").val(projectDetails.project_start_date);
+            $("#editProjectEndDate").val(projectDetails.project_end_date);
             $("#editProjectDetails").val(projectDetailString);
-            }
+        }
         
         function deletePoject(projectId) {
-            console.log("the project ... ",projectId)
             $.ajax({
-                url: '/task/project/' + projectId + '/', // Replace with your API endpoint
+                url: `/task/project/${projectId}`, // Replace with your API endpoint
                 method: 'DELETE', // Or 'POST', 'PUT', 'DELETE'
                 dataType: 'json', // Expected data type from the server (e.g., 'json', 'xml', 'html')
                 headers: {
@@ -182,7 +199,6 @@
                     // Handle successful response
                     console.log('Delete successfully ..:', response);
                     window.location.reload();
-                    // window.location.replace('/task/dashboard_page/');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     // Handle errors
@@ -196,34 +212,33 @@
         }
         function showCreateProjectForm() {
             $('#overlay').removeClass('hidden');
-            $('#create_project').removeClass('hidden');
+            $('#createProjectForm').removeClass('hidden');
             $('body').css('overflow', 'hidden');
         }
         function hideCreateProjectForm() {
             $('#overlay').addClass('hidden');
-            $('#create_project').addClass('hidden');
+            $('#createProjectForm').addClass('hidden');
             $('body').css('overflow', 'auto');
         }
 
-
         $(document).ready(function() {
-            console.log("accessToken my value... ", accessToken)
 
-            $('#logout_button').click(function(event) {
+            $('#logoutButton').click(function(event) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
+                localStorage.removeItem('userType');
                 window.location.href = '/login_page/'; // Example redirect
             });
 
-            $("#project_submit_button").click(function(event) {
-                var project_name = $("#project_name").val();
-                var project_start_date = $("#project_start_date").val();
-                var project_end_date = $("#project_end_date").val();
-                if(project_name != "" && project_start_date != "" && project_end_date != ""){
+            $("#projectSubmitButton").click(function(event) {
+                var projectName = $("#projectName").val();
+                var projectStartDate = $("#projectStartDate").val();
+                var projectEndDate = $("#projectEndDate").val();
+                if(projectName != "" && projectStartDate != "" && projectEndDate != ""){
                     var payload = {
-                        "project_name" : project_name,
-                        "project_start_date" : project_start_date,
-                        "project_end_date" : project_end_date
+                        "project_name" : projectName,
+                        "project_start_date" : projectStartDate,
+                        "project_end_date" : projectEndDate
                     }
                     $.ajax({
                         url: "http://127.0.0.1:8000/task/project/",
@@ -249,11 +264,11 @@
                         }
                         });
                 } else{
-                    $("#null_create_project").text("Please fill all requied field");
+                    $("#nullCreateProject").text("Please fill all requied field");
                 }
             } )
 
-            $('#table_id').DataTable( {
+            $('#projectTableId').DataTable( {
                 ajax: {
                     url: '/task/project/',
                     type: 'GET', // Or 'POST', 'PUT', etc. depending on your API
@@ -285,12 +300,98 @@
                             },
                             title: "Actions" // Column header
                         }
-
                     ]
-            }
-            );
-     });
-           
+            } );
+        });
+    } else {
+        $('#employeeTableId').DataTable( {
+            ajax: {
+                url: 'http://127.0.0.1:8000/task/task_detail/',
+                type: 'GET', // Or 'POST', 'PUT', etc. depending on your API
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+                },
+                dataSrc: ''           
+            },
+                columns: [
+                        {
+                            data: null, // No data source for this column
+                            title: "Sr. No.",
+                            render: function (data, type, row, meta) {
+                                return meta.row + 1; // Returns the row index + 1
+                            }
+                        },
+                        { data: 'manager_task.project.project_name' },
+                        { data: 'manager_task.task_name' },
+                        { 
+                            data: 'manager_task.manager_start_date',
+                            render: function ( data, type, row ) {
+                                var dateSplit = data.split('-');
+                                return `${dateSplit[2]}-${dateSplit[1]}-${dateSplit[0]}`;
+                            }
+                        },
+                        {
+                            data: 'manager_task.manager_end_date',
+                            render: function ( data, type, row ) {
+                                var dateSplit = data.split('-');
+                                return `${dateSplit[2]}-${dateSplit[1]}-${dateSplit[0]}`;
+                            }
+                        },
+                        { data: 'manager_task.assign' },
+                        { 
+                            data: 'employee_start_date',
+                            render: function ( data, type, row) {
+                                if(data == null){
+                                    return "-";
+                                } else {
+                                    return data
+                                }
+                            } 
+                        },
+                        { 
+                            data: 'employee_end_date',
+                            render: function ( data, type, row) {
+                                if(data == null){
+                                    return "-";
+                                } else {
+                                    return data
+                                }
+                            } 
+                        },
+                        {
+                            data: 'employee_end_date',
+                            render: function ( data, type, row ){
+                                if(data){
+                                    return "<b>Success</b>"
+                                }else {
+                                    return "<b>Pending</b>"
+                                }
+                            }
+                        },
+                        {
+                            data: null, // No direct data source for this column
+                            render: function (data, type, row) {
+                                // 'row' contains the full data for the current row
+                                return `
+                                    <button class="btn btn-primary btn-sm edit-btn" style="background-color: #007bff;color:white;" onclick='editTask(${JSON.stringify(row)})' data-id="${row.id}" >Edit</button>
+                                    <button class="btn btn-danger btn-sm delete-btn" style="background-color: #f44336;color:white;" onclick="deleteTask(${row.manager_task.id})" data-id="${row.id}">Delete</button>
+                                `;
+                            },
+                        }
+                    ],
+                    initComplete: function(settings, json) {
+                        var table = this.api();
+                        table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                            var data = this.data();
+                            // Remove a row based on a condition after it has been drawn
+                            if (data.manager_task.project.id != project_id) {
+                                this.remove();
+                            }
+                        });
+                        table.draw();
+                    }
+        } );        
+    }       
     </script>
 
 

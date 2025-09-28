@@ -11,64 +11,36 @@ from rest_framework import status
 from rest_framework import generics
 # Create your views here.
 
-
-from accounts.models import User
-
-from rest_framework.generics import RetrieveAPIView
-from django.contrib.auth import get_user_model
-
-class UserProfileDetailView(APIView):
-    def get(self, request, username):
-        ## pk is None requied.
-        # if pk is not None:
-        #     return Response({'massage':'project id is not requied for get all project detail.'})
-        # user_object = request.user
-        user_detail = User.objects.filter(username=username, user_type="Employee")
-        # print("in user profile ", username)
-        # print(user_detail.values())
-        # print(user_detail.first())
-        serializer = UserProfileSerializer(user_detail, many=True)
-        if user_detail.first():
-            # print("if condition///")
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response({"massage":"This User name is not exist."})
-
-# class UserProfileDetailView(RetrieveAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserProfileSerializer
-#     lookup_field = 'username' # Or 'pk' if looking up by ID
-
-# User = get_user_model()
-
-# class CheckUsernameView(APIView):
-#     def get(self, request, *args, **kwargs):
-#         username = request.query_params.get('username', None)
-#         print("val : ", username)
-#         print("val : ", type(username))
-#         if username:
-#             username_exists = User.objects.filter(username__iexact=username).exists()
-#             return Response({'username_exists': username_exists})
-#         return Response({'error': 'Username parameter is required'}, status=400)
-
-class TaskDetail(generics.ListAPIView):
-    # queryset = EmployeeTask.objects.select_related('manager_task').all()
-    # serializer_class = EmployeeSerializer77
-    def get(self, request):
-        employee_task_queryset = EmployeeTask.objects.all()
-        serializer_class = EmployeeTaskSerializerGetTask(employee_task_queryset, many=True)
-        # print(serializer_class)
-        # print(serializer_class.data)
-        return Response(serializer_class.data, status=status.HTTP_200_OK)
-
 def dashboard_page(request):
+    print(dir(request))  
+    print("value : ", request.user.id)
+    print("value : ", request.user.username)
+    print("value : ", dir)
+
     print("this is login page...")
     return render(request, 'task/dashboard.html')
 
 def manager_task_page(request, project_id):
     print("this is update page...")
     return render(request, 'task/manager_task.html',{'project_id':project_id})
+
+class UserProfileDetailView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, username):
+        user_detail = User.objects.filter(username=username)
+        serializer = UserProfileSerializer(user_detail, many=True)
+        if user_detail.first():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"massage":"This User name is not exist."})
+
+class TaskDetail(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        employee_task_queryset = EmployeeTask.objects.all()
+        serializer_class = EmployeeTaskSerializerGetTask(employee_task_queryset, many=True)
+        return Response(serializer_class.data, status=status.HTTP_200_OK)
 
 class ProjectView(APIView):
     authentication_classes = [JWTAuthentication]
