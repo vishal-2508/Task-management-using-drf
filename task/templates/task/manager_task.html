@@ -443,7 +443,7 @@
                                 if(data == null){
                                     return "-";
                                 } else {
-                                    return data
+                                    return (new Date(data)).toUTCString() ;
                                 }
                             } 
                         },
@@ -453,7 +453,7 @@
                                 if(data == null){
                                     return "-";
                                 } else {
-                                    return data
+                                    return (new Date(data)).toUTCString() ;
                                 }
                             } 
                         },

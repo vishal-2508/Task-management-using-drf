@@ -23,12 +23,12 @@ def manager_task_page(request, project_id):
 class EmployeeTaskAction(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    def get(self, request, employee_id, action):
+    def get(self, request, employee_task_id, action):
         current_datetime = datetime.datetime.now()
         if action == 'start':
-            EmployeeTask.objects.filter(id=employee_id).update(employee_start_date=current_datetime, employee_end_date=None)
+            EmployeeTask.objects.filter(id=employee_task_id).update(employee_start_date=current_datetime, employee_end_date=None)
         else:
-            EmployeeTask.objects.filter(id=employee_id).update(employee_end_date=current_datetime)
+            EmployeeTask.objects.filter(id=employee_task_id).update(employee_end_date=current_datetime)
         return Response({"massage" : "Employee Task action update successfully"})
 
 class UserProfileDetailView(APIView):

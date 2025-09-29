@@ -293,8 +293,20 @@
                                 }
                             },
                             { data: 'project_name' },
-                            { data: 'project_start_date' },
-                            { data: 'project_end_date' },
+                            { 
+                                data: 'project_start_date',
+                                render: function ( data, type, row ) {
+                                    var dateSplit = data.split('-');
+                                    return `${dateSplit[2]}-${dateSplit[1]}-${dateSplit[0]}`;
+                                } 
+                            },
+                            { 
+                                data: 'project_end_date',
+                                render: function ( data, type, row ) {
+                                    var dateSplit = data.split('-');
+                                    return `${dateSplit[2]}-${dateSplit[1]}-${dateSplit[0]}`;
+                                }
+                            },
                             {
                                 data: null, // No direct data source for this column
                                 render: function (data, type, row) {
@@ -317,9 +329,9 @@
             $("#employeeContainer").show()
             var current_datetime = $('#currentdate').data('current_datetime');
 
-            function startAction(employeeId){
+            function startAction(employeeTaskId){
                 $.ajax({
-                    url: `/task/employee-task-action/${employeeId}/start/`, // Your server-side endpoint
+                    url: `/task/employee-task-action/${employeeTaskId}/start/`, // Your server-side endpoint
                     type: 'GET', // Or POST if your API uses it for updates
                     dataType: 'json', // Specify content type for JSON data
                     headers: {
@@ -335,9 +347,9 @@
                 });
             }
             
-            function endAction(employeeId) {
+            function endAction(employeeTaskId) {
                 $.ajax({
-                    url: `/task/employee-task-action/${employeeId}/end/`, // Your server-side endpoint
+                    url: `/task/employee-task-action/${employeeTaskId}/end/`, // Your server-side endpoint
                     type: 'GET', // Or POST if your API uses it for updates
                     dataType: 'json', // Specify content type for JSON data
                     headers: {
@@ -394,7 +406,7 @@
                                         if(data == null){
                                             return "-";
                                         } else {
-                                            return data
+                                            return (new Date(data)).toUTCString() ;
                                         }
                                     } 
                                 },
@@ -404,7 +416,7 @@
                                         if(data == null){
                                             return "-";
                                         } else {
-                                            return data
+                                            return (new Date(data)).toUTCString() ;
                                         }
                                     } 
                                 },
