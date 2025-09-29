@@ -9,20 +9,27 @@ from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status
 from rest_framework import generics
+import datetime
 # Create your views here.
 
 def dashboard_page(request):
-    print(dir(request))  
-    print("value : ", request.user.id)
-    print("value : ", request.user.username)
-    print("value : ", dir)
-
-    print("this is login page...")
-    return render(request, 'task/dashboard.html')
+    current_datetime = datetime.date.today().isoformat()
+    return render(request, 'task/dashboard.html', {"current_datetime":current_datetime})
 
 def manager_task_page(request, project_id):
     print("this is update page...")
     return render(request, 'task/manager_task.html',{'project_id':project_id})
+
+class EmployeeTaskAction(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, employee_id, action):
+        current_datetime = datetime.datetime.now()
+        if action == 'start':
+            EmployeeTask.objects.filter(id=employee_id).update(employee_start_date=current_datetime, employee_end_date=None)
+        else:
+            EmployeeTask.objects.filter(id=employee_id).update(employee_end_date=current_datetime)
+        return Response({"massage" : "Employee Task action update successfully"})
 
 class UserProfileDetailView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -37,8 +44,15 @@ class UserProfileDetailView(APIView):
 class TaskDetail(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    def get(self, request):
-        employee_task_queryset = EmployeeTask.objects.all()
+    def get(self, request, user_type=None):
+        print("request : ", request)
+        print("request : ", request.user.user_type)
+        print("request : ", type(request.user))
+        if user_type is not None and request.user.user_type == "Employee":
+            print("here user : ", user_type)
+            employee_task_queryset = EmployeeTask.objects.filter(user=request.user)
+        else:
+            employee_task_queryset = EmployeeTask.objects.all()
         serializer_class = EmployeeTaskSerializerGetTask(employee_task_queryset, many=True)
         return Response(serializer_class.data, status=status.HTTP_200_OK)
 

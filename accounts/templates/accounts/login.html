@@ -74,6 +74,7 @@
                                 },
                         success: function(data) {
                             localStorage.setItem('userType', data[0].user_type);
+                            localStorage.setItem('userType', data[0].user_type);
                             window.location.replace('/task/dashboard_page/');
                         },
                         error: function(xhr, status, error) {
