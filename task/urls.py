@@ -15,6 +15,6 @@ urlpatterns = [
     path('task_detail/', TaskDetail.as_view(), name='task_detail'),
     path('task_detail/<str:user_type>/', TaskDetail.as_view(), name='task_detail'),
     path('users_profile/<str:username>/', UserProfileDetailView.as_view(), name='user-profile'),
-    path('employee-task-action/<str:employee_id>/<str:action>/', EmployeeTaskAction.as_view(), name='employee_task_action'),
+    path('employee-task-action/<str:employee_task_id>/<str:action>/', EmployeeTaskAction.as_view(), name='employee_task_action'),
 
 ]
