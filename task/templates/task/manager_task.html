@@ -405,7 +405,7 @@
 
         $('#table_id').DataTable( {
             ajax: {
-                url: 'http://127.0.0.1:8000/task/task_detail/',
+                url: '/task/task_detail/',
                 type: 'GET', // Or 'POST', 'PUT', etc. depending on your API
                 beforeSend: function (xhr) {
                     xhr.setRequestHeader("Authorization", "Bearer " + accessToken);

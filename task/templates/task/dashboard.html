@@ -157,10 +157,10 @@
                         "project_end_date" : editProjectEndDate
                         }
                     $.ajax({
-                        url: `/task/project/${projectDetailObjects.id}/`, // Your server-side endpoint
-                        type: 'PUT', // Or POST if your API uses it for updates
-                        //contentType: 'application/json', // Specify content type for JSON data
-                        //data: JSON.stringify(payload), // Send updated data as JSON
+                        url : `/task/project/${projectDetailObjects.id}/`, // Your server-side endpoint
+                        type : 'PUT', // Or POST if your API uses it for updates
+                        // contentType: 'application/json', // Specify content type for JSON data
+                        // data: JSON.stringify(payload), // Send updated data as JSON
                         dataType: 'json', // Specify content type for JSON data
                         data: payload, // Send updated data as JSON
                         headers: {
@@ -248,7 +248,7 @@
                             "project_end_date" : projectEndDate
                         }
                         $.ajax({
-                            url: "http://127.0.0.1:8000/task/project/",
+                            url: "/task/project/",
                             method: 'POST', // HTTP method (GET, POST, PUT, DELETE, etc.)
                             dataType: 'json', // Expected data type of the response (e.g., 'json', 'xml', 'html')
                             data : payload,

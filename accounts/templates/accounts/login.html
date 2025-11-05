@@ -55,7 +55,7 @@
                     "password" : password
                 }
                 $.ajax({
-                url: 'http://127.0.0.1:8000/login/', // Replace with your API endpoint
+                url: '/login/', // Replace with your API endpoint
                 method: 'POST', // HTTP method (GET, POST, PUT, DELETE, etc.)
                 dataType: 'json', // Expected data type of the response (e.g., 'json', 'xml', 'html')
                 data : payload, // Data to be sent in the request body
@@ -74,7 +74,7 @@
                                 },
                         success: function(data) {
                             localStorage.setItem('userType', data[0].user_type);
-                            localStorage.setItem('userType', data[0].user_type);
+                            // localStorage.setItem('userType', data[0].user_type);
                             window.location.replace('/task/dashboard_page/');
                         },
                         error: function(xhr, status, error) {
