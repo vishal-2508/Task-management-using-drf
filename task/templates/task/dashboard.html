@@ -13,15 +13,230 @@
         }
         // If authenticated, the rest of the page content will load
     </script>
+    
     <style>
-        {% comment %} body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 0;
+        * {
+            box-sizing: border-box;
         }
-        #main-content {
-            padding: 20px;
-        } {% endcomment %}
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+        }
+
+        /* ---------- Header ---------- */
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            padding: 16px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .dashboard-header h2 {
+            color: #2575fc;
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .btn-logout {
+            padding: 9px 18px;
+            background: #e63946;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #c8303c;
+        }
+
+        /* ---------- Content wrapper ---------- */
+        .dashboard-content {
+            padding: 25px 30px 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .btn-primary-action {
+            padding: 11px 20px;
+            background: #2575fc;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary-action:hover {
+            background: #1a5cd8;
+        }
+
+        /* ---------- Overlay + Modal (kept same selectors, just styled) ---------- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 99;
+        }
+
+        .project-form-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 28px 30px;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            z-index: 100;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .project-form-container h2 {
+            color: #2575fc;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .project-form-container b p {
+            color: #e63946;
+            font-size: 13px;
+            min-height: 16px;
+            margin-bottom: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .form-field {
+            margin-bottom: 14px;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-field input:focus {
+            border-color: #2575fc;
+            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 10px;
+            background: #2575fc;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #1a5cd8;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 10px;
+            background: #eee;
+            color: #333;
+            border: none;
+            border-radius: 7px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #ddd;
+        }
+
+        /* ---------- Table card wrapper ---------- */
+        .table-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow-x: auto;
+        }
+
+        table.dataTable {
+            width: 100% !important;
+            border-collapse: collapse;
+        }
+
+        table.dataTable thead th {
+            background: #2575fc;
+            color: #fff;
+            font-size: 13px;
+            padding: 12px 10px !important;
+            text-align: left;
+        }
+
+        table.dataTable tbody td {
+            padding: 10px !important;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+        }
+
+        table.dataTable tbody tr:hover {
+            background: #f7f9ff;
+        }
+
+        table.dataTable tbody button {
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            font-size: 12px !important;
+            border: none !important;
+            cursor: pointer;
+        }
+    </style>
+
+
+    {% comment %} change this style tag ------------------->{% endcomment %}
+    {% comment %} <style>
         .overlay {
             position: fixed;
             top: 0;
@@ -46,9 +261,8 @@
         }
         .hidden {
             display: none;
-    }
-
-    </style>
+    } 
+    </style> {% endcomment %}
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
@@ -58,79 +272,187 @@
 
 
 </head>
-<body>
-    <h2>Dashboard page</h2>
-    <div style="text-align: right;">
-        <button type="button" style="font-weight: bold;" onclick="logoutUser()">Logout</button>
-    </div> <br>
 
-    <div id="managerContainer" style="display: none;">
-        
-        <div id="overlay" class="overlay hidden"></div>
 
-        <button onclick="showCreateProjectForm()" style="font-weight: bold;">Create New Project</button> <br> <br>
-
-        <div id="createProjectForm" class="project-form-container hidden">
-            <h2>Create Project</h2>
-            <b> <p id="nullCreateProject"></p> </b>
-            <label for="projectName">Project Name:</label>
-            <input type="text" id="projectName" name="projectName" ><br><br>
-            <label for="projectStartDate">Project Start Date:</label>
-            <input type="date" id="projectStartDate" name="projectStartDate" ><br><br>
-            <label for="projectEndDate">Project End Date:</label>
-            <input type="date" id="projectEndDate" name="projectEndDate" ><br><br>
-            <button id="projectSubmitButton" type="submit">Save</button><br><br>
-            <button type="button" onclick="hideCreateProjectForm()">Cancel</button>
+    <body>
+        <div class="dashboard-header">
+            <h2>Dashboard page</h2>
+            <button type="button" class="btn-logout" onclick="logoutUser()">Logout</button>
         </div>
 
-        <div id="editProjectForm" class="project-form-container hidden">
-            <h2>Edit Project</h2>
-            <b> <p id="nullEditProject"></p> </b>
-            <label for="editProjectName">Project Name:</label>
-            <input type="text" id="editProjectName" name="editProjectName" ><br><br>
-            <label for="editProjectStartDate">Project Start Date:</label>
-            <input type="date" id="editProjectStartDate" name="editProjectStartDate" ><br><br>
-            <label for="editProjectEndDate">Project End Date:</label>
-            <input type="date" id="editProjectEndDate" name="editProjectEndDate" ><br><br>
-            <input type="hidden" id="editProjectDetails" name="editProjectDetails" value="no set data">
-            <button type="button" onclick="saveChanges()">Save</button>
-            <button type="button" onclick="cancelEdit()">Cancel</button>
+        <div class="dashboard-content">
+
+            <div id="managerContainer" style="display: none;">
+
+                <div id="overlay" class="overlay hidden"></div>
+
+                <button onclick="showCreateProjectForm()" class="btn-primary-action">Create New Project</button>
+
+                <div id="createProjectForm" class="project-form-container hidden">
+                    <h2>Create Project</h2>
+                    <b> <p id="nullCreateProject"></p> </b>
+
+                    <div class="form-field">
+                        <label for="projectName">Project Name:</label>
+                        <input type="text" id="projectName" name="projectName">
+                    </div>
+                    <div class="form-field">
+                        <label for="projectStartDate">Project Start Date:</label>
+                        <input type="date" id="projectStartDate" name="projectStartDate">
+                    </div>
+                    <div class="form-field">
+                        <label for="projectEndDate">Project End Date:</label>
+                        <input type="date" id="projectEndDate" name="projectEndDate">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button id="projectSubmitButton" type="submit" class="btn-save">Save</button>
+                        <button type="button" class="btn-cancel" onclick="hideCreateProjectForm()">Cancel</button>
+                    </div>
+                </div>
+
+                <div id="editProjectForm" class="project-form-container hidden">
+                    <h2>Edit Project</h2>
+                    <b> <p id="nullEditProject"></p> </b>
+
+                    <div class="form-field">
+                        <label for="editProjectName">Project Name:</label>
+                        <input type="text" id="editProjectName" name="editProjectName">
+                    </div>
+                    <div class="form-field">
+                        <label for="editProjectStartDate">Project Start Date:</label>
+                        <input type="date" id="editProjectStartDate" name="editProjectStartDate">
+                    </div>
+                    <div class="form-field">
+                        <label for="editProjectEndDate">Project End Date:</label>
+                        <input type="date" id="editProjectEndDate" name="editProjectEndDate">
+                    </div>
+                    <input type="hidden" id="editProjectDetails" name="editProjectDetails" value="no set data">
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-save" onclick="saveChanges()">Save</button>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <table id="projectTableId" class="display">
+                        <thead>
+                            <tr>
+                                <th>sr no</th>
+                                <th>Project Name</th>
+                                <th>Project Start date</th>
+                                <th>Project End date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+
+            <div id="employeeContainer" style="display: none;">
+                <div id="currentdate" data-current_datetime="{{ current_datetime }}"></div>
+
+                <div class="table-card">
+                    <table id="employeeTableId" class="display">
+                        <thead>
+                            <tr>
+                                <th>sr no</th>
+                                <th>Project Name</th>
+                                <th>Task Name</th>
+                                <th>Task Start Date</th>
+                                <th>Task End Date</th>
+                                <th>Employee Start Date</th>
+                                <th>Employee End Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </body>
+
+
+    {% comment %} change this body tag ------------------->{% endcomment %}
+    {% comment %} <body>
+        <h2>Dashboard page</h2>
+        <div style="text-align: right;">
+            <button type="button" style="font-weight: bold;" onclick="logoutUser()">Logout</button>
+        </div> <br>
+
+        <div id="managerContainer" style="display: none;">
+            
+            <div id="overlay" class="overlay hidden"></div>
+
+            <button onclick="showCreateProjectForm()" style="font-weight: bold;">Create New Project</button> <br> <br>
+
+            <div id="createProjectForm" class="project-form-container hidden">
+                <h2>Create Project</h2>
+                <b> <p id="nullCreateProject"></p> </b>
+                <label for="projectName">Project Name:</label>
+                <input type="text" id="projectName" name="projectName" ><br><br>
+                <label for="projectStartDate">Project Start Date:</label>
+                <input type="date" id="projectStartDate" name="projectStartDate" ><br><br>
+                <label for="projectEndDate">Project End Date:</label>
+                <input type="date" id="projectEndDate" name="projectEndDate" ><br><br>
+                <button id="projectSubmitButton" type="submit">Save</button><br><br>
+                <button type="button" onclick="hideCreateProjectForm()">Cancel</button>
+            </div>
+
+            <div id="editProjectForm" class="project-form-container hidden">
+                <h2>Edit Project</h2>
+                <b> <p id="nullEditProject"></p> </b>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <label for="editProjectName">Project Name:</label>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <input type="text" id="editProjectName" name="editProjectName" ><br><br>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <label for="editProjectStartDate">Project Start Date:</label>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <input type="date" id="editProjectStartDate" name="editProjectStartDate" ><br><br>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <label for="editProjectEndDate">Project End Date:</label>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <input type="date" id="editProjectEndDate" name="editProjectEndDate" ><br><br>
+                <input type="hidden" id="editProjectDetails" name="editProjectDetails" value="no set data">
+                <button type="button" onclick="saveChanges()">Save</button>
+                <button type="button" onclick="cancelEdit()">Cancel</button>
+            </div>
+
+            <table id="projectTableId" class="display">
+                <thead>
+                    <tr>
+                        <th>sr no</th>
+                        <th>Project Name</th>
+                        <th>Project Start date</th>
+                        <th>Project End date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
 
-        <table id="projectTableId" class="display">
-            <thead>
-                <tr>
-                    <th>sr no</th>
-                    <th>Project Name</th>
-                    <th>Project Start date</th>
-                    <th>Project End date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
+        <div id="employeeContainer" style="display: none;">
+            <div id="currentdate" data-current_datetime="{{ current_datetime }}"></div>
 
-    <div id="employeeContainer" style="display: none;">
-        <div id="currentdate" data-current_datetime="{{ current_datetime }}"></div>
+            <table id="employeeTableId" class="display">
+                <thead>
+                    <tr>
+                        <th>sr no</th>
+                        <th>Project Name</th>
+                        <th>Task Name</th>
+                        <th>Task Start Date</th>
+                        <th>Task End Date</th>
+                        <th>Employee Start Date</th>
+                        <th>Employee End Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
 
-        <table id="employeeTableId" class="display">
-            <thead>
-                <tr>
-                    <th>sr no</th>
-                    <th>Project Name</th>
-                    <th>Task Name</th>
-                    <th>Task Start Date</th>
-                    <th>Task End Date</th>
-                    <th>Employee Start Date</th>
-                    <th>Employee End Date</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
+    </body> {% endcomment %}
 
-</body>
+
+
 </html>
 
     <script>

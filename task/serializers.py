@@ -32,6 +32,10 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = "__all__"
         include = ["project_managertask"]
 
+#### above code is write 
+#####
+#####
+#####
 
 
 class ProjectSerializerGetTask(serializers.ModelSerializer):

@@ -13,7 +13,230 @@
         }
         // If authenticated, the rest of the page content will load
     </script>
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+        }
+
+        a {
+            text-decoration: none;
+            display: inline-block;
+            padding: 8px 16px;
+        }
+
+        a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .previous {
+            background-color: #2575fc;
+            color: white;
+            border-radius: 7px;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 20px 30px;
+            transition: background 0.2s;
+        }
+
+        .previous:hover {
+            background-color: #1a5cd8;
+            color: white;
+        }
+
+        /* ---------- Overlay + Modal (same selectors, restyled) ---------- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 99;
+        }
+
+        .task-form-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 28px 30px;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            z-index: 100;
+            width: 100%;
+            max-width: 400px;
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+
+        .task-form-container h2 {
+            color: #2575fc;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .task-form-container b p {
+            color: #e63946;
+            font-size: 13px;
+            min-height: 16px;
+            margin-bottom: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ---------- Page content ---------- */
+        .page-heading {
+            padding: 25px 30px 0;
+        }
+
+        .page-heading h1 {
+            color: #2575fc;
+            font-size: 24px;
+            margin: 0 0 15px;
+        }
+
+        .content-wrap {
+            padding: 0 30px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .btn-primary-action {
+            padding: 11px 20px;
+            background: #2575fc;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary-action:hover {
+            background: #1a5cd8;
+        }
+
+        .form-field {
+            margin-bottom: 14px;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-field input:focus {
+            border-color: #2575fc;
+            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 7px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #taskSubmitButton {
+            background: #2575fc;
+            color: #fff;
+        }
+
+        #taskSubmitButton:hover {
+            background: #1a5cd8;
+        }
+
+        .modal-actions button[type="button"] {
+            background: #eee;
+            color: #333;
+        }
+
+        .modal-actions button[type="button"]:hover {
+            background: #ddd;
+        }
+
+        /* ---------- Table card ---------- */
+        .table-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow-x: auto;
+        }
+
+        table.dataTable {
+            width: 100% !important;
+            border-collapse: collapse;
+        }
+
+        table.dataTable thead th {
+            background: #2575fc;
+            color: #fff;
+            font-size: 13px;
+            padding: 12px 10px !important;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        table.dataTable tbody td {
+            padding: 10px !important;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+        }
+
+        table.dataTable tbody tr:hover {
+            background: #f7f9ff;
+        }
+
+        table.dataTable tbody button {
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            font-size: 12px !important;
+            border: none !important;
+            cursor: pointer;
+        }
+    </style>
+
+    {% comment %} change this style tag ------------------->{% endcomment %}
+
+    {% comment %} <style>
         a {
         text-decoration: none;
         display: inline-block;
@@ -53,31 +276,121 @@
         .hidden {
             display: none;
     }
-    </style>
+    </style> {% endcomment %}
 
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+        <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
+        
+        <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+
+</head>
 
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-
-
-
-
-
-
-
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
-    
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
 
 <body>
+    <div class="page-heading">
+        <h1>Manager Task</h1>
+    </div>
+
+    <div id="projectNumber" data-project_id="{{ project_id }}"></div>
+
+    <div class="content-wrap">
+
+        <div id="overlay" class="overlay hidden"></div>
+
+        <button onclick="showCreateTaskForm()" class="btn-primary-action">Create New Task</button>
+
+        <div id="createTask" class="task-form-container hidden">
+            <h2>Create Task</h2>
+            <b> <p id="nullCreateTask"></p> </b>
+
+            <div class="form-field">
+                <label for="taskName">Task Name:</label>
+                <input type="text" id="taskName" name="taskName">
+            </div>
+            <div class="form-field">
+                <label for="managerStartDate">Task Start Date:</label>
+                <input type="date" id="managerStartDate" name="managerStartDate">
+            </div>
+            <div class="form-field">
+                <label for="managerEndDate">Task End Date:</label>
+                <input type="date" id="managerEndDate" name="managerEndDate">
+            </div>
+            <b> <p id="notValidAssign" style="display: none;"></p> </b>
+            <div class="form-field">
+                <label for="assign">Assign:</label>
+                <input type="text" id="assign" name="assign">
+            </div>
+
+            <div class="modal-actions">
+                <button id="taskSubmitButton" type="submit">Save</button>
+                <button type="button" onclick="hideCreateTaskForm()">Cancel</button>
+            </div>
+        </div>
+
+        <div id="editTaskForm" class="task-form-container hidden">
+            <h2>Edit Task</h2>
+            <b> <p id="nullEditTask"></p> </b>
+
+            <div class="form-field">
+                <label for="editTaskName">Task Name:</label>
+                <input type="text" id="editTaskName" name="editTaskName">
+            </div>
+            <div class="form-field">
+                <label for="editManagerStartDate">Task Start Date:</label>
+                <input type="date" id="editManagerStartDate" name="editManagerStartDate">
+            </div>
+            <div class="form-field">
+                <label for="editManagerEndDate">Task End Date:</label>
+                <input type="date" id="editManagerEndDate" name="editManagerEndDate">
+            </div>
+            <b> <p id="editNotValidAssign" style="display: none;"></p> </b>
+            <div class="form-field">
+                <label for="editAssign">Assign:</label>
+                <input type="text" id="editAssign" name="editAssign">
+            </div>
+            <input type="hidden" id="editTaskDetails" name="editTaskDetails" value="no set task detail">
+
+            <div class="modal-actions">
+                <button type="button" onclick="saveChanges()">Save</button>
+                <button type="button" onclick="cancelEdit()">Cancel</button>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <table id="table_id" class="display">
+                <thead>
+                    <tr>
+                        <th>sr no</th>
+                        <th>Project Name</th>
+                        <th>Task Name</th>
+                        <th>Task Start Date</th>
+                        <th>Task End Date</th>
+                        <th>Assign</th>
+                        <th>Employee Start Date</th>
+                        <th>Employee End Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+        <a href="{% url 'dashboard_page' %}" class="previous">&laquo; Go To Back</a>
+
+    </div>
+
+</body>
 
 
+{% comment %} change this body tag ------------------->{% endcomment %}
 
+{% comment %} <body>
 <nav class="navbar navbar-expand-lg  navbar-dark bg-primary">
   <div class="container-fluid">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,13 +416,6 @@
     </div>
   </div>
 </nav>
-
-
-
-
-
-
-
 
     <h1>manager task</h1>
     <div id="projectNumber" data-project_id="{{ project_id }}"></div>
@@ -169,7 +475,10 @@
     </table>
     <a href="{% url 'dashboard_page' %}" class="previous">&laquo; Go To Back</a>
 
-</body>
+</body> {% endcomment %}
+
+
+
 </html>
 
 
@@ -488,6 +797,13 @@
                             }
                         });
                         table.draw();
+                    },
+
+                    drawCallback: function(settings) {
+                        var api = this.api();
+                        api.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                            cell.innerHTML = api.page.info().start + i + 1;
+                        });
                     }
 
         } );    
